@@ -13,54 +13,99 @@ namespace CellularAutomata
         private readonly int width;
         private readonly int height;
         private readonly CellularAutomataSettings settings;
+        private readonly Action[] threadActions;
+        private const int ThreadCount = 8;
+        private readonly List<int> remainingLines = new List<int>();
 
         private byte[] cells;
+        private byte[] updateCells;
 
         public readonly Texture texture;
 
-        public CellularAutomataSimulation(int width, int height, string settings) : this(width, height, Utils.GenerateSettings(settings))
+        private readonly bool randomSpawn;
+
+        public CellularAutomataSimulation(int width, int height, string settings, bool randomSpawn) : this(width, height, Utils.GenerateSettings(settings), randomSpawn)
         {
 
         }
 
-        public CellularAutomataSimulation(int width, int height, CellularAutomataSettings settings)
+        public CellularAutomataSimulation(int width, int height, CellularAutomataSettings settings, bool randomSpawn)
         {
             this.width = width;
             this.height = height;
             this.settings = settings;
-            cells = new byte[width * height];
-            Random random = new Random();
-            //cells[GetIndex((int)(width / 2f), (int)(height / 2f))] = settings.states;
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    bool spawn = random.Next(0, 2) >= 1;
-                    if (spawn)
-                    {
-                        cells[GetIndex(x, y)] = settings.states;
-                    }
-                }
-            }
+            this.randomSpawn = randomSpawn;
+            ResetCells();
             texture = new Texture((uint)width, (uint)height);
+
+            threadActions = new Action[ThreadCount];
+            for (int i = 0; i < ThreadCount; i++)
+            {
+                threadActions[i] = () => SimulateThread();
+            }
 
             UpdateTexture();
         }
 
+        public void ResetCells()
+        {
+            cells = new byte[width * height];
+            if (randomSpawn)
+            {
+                Random random = new Random();
+                for (int x = 0; x < width; x++)
+                {
+                    for (int y = 0; y < height; y++)
+                    {
+                        bool spawn = random.Next(0, 2) >= 1;
+                        if (spawn)
+                        {
+                            cells[GetIndex(x, y)] = settings.states;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                cells[GetIndex((int)(width / 2f), (int)(height / 2f))] = settings.states;
+            }
+        }
+
+        private void SimulateThread()
+        {
+            while (remainingLines.Count > 0)
+            {
+                int line = 0;
+                lock (remainingLines)
+                {
+                    if (remainingLines.Count <= 0)
+                        break;
+                    line = remainingLines[0];
+                    remainingLines.RemoveAt(0);
+                }
+
+                for (int i = 0; i < width; i++)
+                {
+                    updateCells[GetIndex(i, line)] = SimulateCell(i, line);
+                }
+            }
+        }
+
         public Texture Simulate()
         {
-            byte[] updateCells = new byte[cells.Length];
+            for (int i = 0; i < height; i++)
+            {
+                remainingLines.Add(i);
+            }
+
+            updateCells = new byte[cells.Length];
             for (int i = 0; i < cells.Length; i++)
             {
                 updateCells[i] = cells[i];
             }
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    updateCells[GetIndex(x, y)] = SimulateCell(x, y);
-                }
-            }
+
+            Parallel.Invoke(threadActions);
+
             cells = updateCells;
 
             UpdateTexture();

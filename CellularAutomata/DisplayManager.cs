@@ -31,6 +31,7 @@ namespace CellularAutomata
             Window.Closed += (_, _) => Close();
 
             KeyboardInput.InitKeyboard();
+            MouseInput.InitMouse();
 
             previousTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
         }

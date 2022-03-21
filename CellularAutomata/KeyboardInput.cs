@@ -2,14 +2,15 @@
 {
     internal struct KeyboardKeys
     {
-        public static Keyboard.Key[] ZoomIn = { Keyboard.Key.Add };
-        public static Keyboard.Key[] ZoomOut = { Keyboard.Key.Subtract };
-        public static Keyboard.Key[] SpeedUp = { Keyboard.Key.Up };
-        public static Keyboard.Key[] SpeedDown = { Keyboard.Key.Down };
+        public static Keyboard.Key[] SpeedUp = { Keyboard.Key.Add };
+        public static Keyboard.Key[] SpeedDown = { Keyboard.Key.Subtract };
         public static Keyboard.Key[] MoveUp = { Keyboard.Key.W };
         public static Keyboard.Key[] MoveLeft = { Keyboard.Key.A };
         public static Keyboard.Key[] MoveRight = { Keyboard.Key.D };
         public static Keyboard.Key[] MoveDown = { Keyboard.Key.S };
+        public static Keyboard.Key[] Reset = { Keyboard.Key.R };
+        public static Keyboard.Key[] Pause = { Keyboard.Key.Space };
+        public static Keyboard.Key[] Next = { Keyboard.Key.Right };
     }
 
     internal static class KeyboardInput
