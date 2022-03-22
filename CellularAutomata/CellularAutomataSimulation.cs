@@ -8,7 +8,7 @@ namespace CellularAutomata
 {
     internal class CellularAutomataSimulation
     {
-        public static uint SimulationSpeed { get; set; }
+        public static int simulationSpeed;
 
         private readonly int width;
         private readonly int height;
@@ -23,6 +23,8 @@ namespace CellularAutomata
         public readonly Texture texture;
 
         private readonly bool randomSpawn;
+
+        public Vector3f cellColor = new Vector3f(1, 1, 1);
 
         public CellularAutomataSimulation(int width, int height, CellularAutomataSettings settings, bool randomSpawn)
         {
@@ -163,9 +165,9 @@ namespace CellularAutomata
                 {
                     int index = y * width + x;
                     int dataIndex = (y * width + x) * 4;
-                    data[dataIndex + 0] = (byte)Math.Round(255 * (cells[index] / (float)settings.states));
-                    data[dataIndex + 1] = (byte)Math.Round(255 * (cells[index] / (float)settings.states));
-                    data[dataIndex + 2] = (byte)Math.Round(255 * (cells[index] / (float)settings.states));
+                    data[dataIndex + 0] = (byte)Math.Round(cellColor.X*255 * (cells[index] / (float)settings.states));
+                    data[dataIndex + 1] = (byte)Math.Round(cellColor.Y*255 * (cells[index] / (float)settings.states));
+                    data[dataIndex + 2] = (byte)Math.Round(cellColor.Z*255 * (cells[index] / (float)settings.states));
                     data[dataIndex + 3] = 255;
                 }
             }

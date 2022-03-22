@@ -1,21 +1,21 @@
-﻿using System;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using ImGuiNET;
+﻿using ImGuiNET;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
+using System;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Saffron2D.GuiCollection
 {
     public static class GuiImpl
     {
         private static bool _windowHasFocus = false;
-        private static readonly bool[] MousePressed = new bool[] {false, false, false};
-        private static readonly bool[] TouchDown = new bool[] {false, false, false};
+        private static readonly bool[] MousePressed = new bool[] { false, false, false };
+        private static readonly bool[] TouchDown = new bool[] { false, false, false };
         private static Texture _fontTexture = null;
-        private static readonly Cursor[] MouseCursors = new Cursor[(int) ImGuiMouseCursor.COUNT];
+        private static readonly Cursor[] MouseCursors = new Cursor[(int)ImGuiMouseCursor.COUNT];
 
         public static void Init(RenderWindow window, bool loadDefaultFont = true)
         {
@@ -37,32 +37,31 @@ namespace Saffron2D.GuiCollection
             io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard; // Enable Keyboard Controls
             //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
             io.ConfigFlags |= ImGuiConfigFlags.DockingEnable; // Enable Docking
-            // io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable; // Enable Multi-Viewport / Platform Windows
-            //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
-            //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+            //io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable; // Enable Multi-Viewport / Platform Windows
+            //io.ConfigFlags |= ImGuiConfigFlags.DpiEnableScaleViewports;
 
             // init keyboard mapping
-            io.KeyMap[(int) ImGuiKey.Tab] = (int) Keyboard.Key.Tab;
-            io.KeyMap[(int) ImGuiKey.LeftArrow] = (int) Keyboard.Key.Left;
-            io.KeyMap[(int) ImGuiKey.RightArrow] = (int) Keyboard.Key.Right;
-            io.KeyMap[(int) ImGuiKey.UpArrow] = (int) Keyboard.Key.Up;
-            io.KeyMap[(int) ImGuiKey.DownArrow] = (int) Keyboard.Key.Down;
-            io.KeyMap[(int) ImGuiKey.PageUp] = (int) Keyboard.Key.PageUp;
-            io.KeyMap[(int) ImGuiKey.PageDown] = (int) Keyboard.Key.PageDown;
-            io.KeyMap[(int) ImGuiKey.Home] = (int) Keyboard.Key.Home;
-            io.KeyMap[(int) ImGuiKey.End] = (int) Keyboard.Key.End;
-            io.KeyMap[(int) ImGuiKey.Insert] = (int) Keyboard.Key.Insert;
-            io.KeyMap[(int) ImGuiKey.Delete] = (int) Keyboard.Key.Delete;
-            io.KeyMap[(int) ImGuiKey.Backspace] = (int) Keyboard.Key.Backspace;
-            io.KeyMap[(int) ImGuiKey.Space] = (int) Keyboard.Key.Space;
-            io.KeyMap[(int) ImGuiKey.Enter] = (int) Keyboard.Key.Enter;
-            io.KeyMap[(int) ImGuiKey.Escape] = (int) Keyboard.Key.Escape;
-            io.KeyMap[(int) ImGuiKey.A] = (int) Keyboard.Key.A;
-            io.KeyMap[(int) ImGuiKey.C] = (int) Keyboard.Key.C;
-            io.KeyMap[(int) ImGuiKey.V] = (int) Keyboard.Key.V;
-            io.KeyMap[(int) ImGuiKey.X] = (int) Keyboard.Key.X;
-            io.KeyMap[(int) ImGuiKey.Y] = (int) Keyboard.Key.Y;
-            io.KeyMap[(int) ImGuiKey.Z] = (int) Keyboard.Key.Z;
+            io.KeyMap[(int)ImGuiKey.Tab] = (int)Keyboard.Key.Tab;
+            io.KeyMap[(int)ImGuiKey.LeftArrow] = (int)Keyboard.Key.Left;
+            io.KeyMap[(int)ImGuiKey.RightArrow] = (int)Keyboard.Key.Right;
+            io.KeyMap[(int)ImGuiKey.UpArrow] = (int)Keyboard.Key.Up;
+            io.KeyMap[(int)ImGuiKey.DownArrow] = (int)Keyboard.Key.Down;
+            io.KeyMap[(int)ImGuiKey.PageUp] = (int)Keyboard.Key.PageUp;
+            io.KeyMap[(int)ImGuiKey.PageDown] = (int)Keyboard.Key.PageDown;
+            io.KeyMap[(int)ImGuiKey.Home] = (int)Keyboard.Key.Home;
+            io.KeyMap[(int)ImGuiKey.End] = (int)Keyboard.Key.End;
+            io.KeyMap[(int)ImGuiKey.Insert] = (int)Keyboard.Key.Insert;
+            io.KeyMap[(int)ImGuiKey.Delete] = (int)Keyboard.Key.Delete;
+            io.KeyMap[(int)ImGuiKey.Backspace] = (int)Keyboard.Key.Backspace;
+            io.KeyMap[(int)ImGuiKey.Space] = (int)Keyboard.Key.Space;
+            io.KeyMap[(int)ImGuiKey.Enter] = (int)Keyboard.Key.Enter;
+            io.KeyMap[(int)ImGuiKey.Escape] = (int)Keyboard.Key.Escape;
+            io.KeyMap[(int)ImGuiKey.A] = (int)Keyboard.Key.A;
+            io.KeyMap[(int)ImGuiKey.C] = (int)Keyboard.Key.C;
+            io.KeyMap[(int)ImGuiKey.V] = (int)Keyboard.Key.V;
+            io.KeyMap[(int)ImGuiKey.X] = (int)Keyboard.Key.X;
+            io.KeyMap[(int)ImGuiKey.Y] = (int)Keyboard.Key.Y;
+            io.KeyMap[(int)ImGuiKey.Z] = (int)Keyboard.Key.Z;
 
             // init rendering
             io.DisplaySize = new Vector2(displaySize.X, displaySize.Y);
@@ -104,19 +103,19 @@ namespace Saffron2D.GuiCollection
 
         private static void OnMouseButtonPressed(object sender, MouseButtonEventArgs args)
         {
-            var button = (int) args.Button;
+            var button = (int)args.Button;
             if (button >= 0 && button < 3)
             {
-                MousePressed[(int) args.Button] = true;
+                MousePressed[(int)args.Button] = true;
             }
         }
 
         private static void OnMouseButtonReleased(object sender, MouseButtonEventArgs args)
         {
-            var button = (int) args.Button;
+            var button = (int)args.Button;
             if (button >= 0 && button < 3)
             {
-                MousePressed[(int) args.Button] = false;
+                MousePressed[(int)args.Button] = false;
             }
         }
 
@@ -140,13 +139,13 @@ namespace Saffron2D.GuiCollection
         private static void OnKeyPressed(object sender, KeyEventArgs args)
         {
             var io = ImGui.GetIO();
-            io.KeysDown[(int) args.Code] = true;
+            io.KeysDown[(int)args.Code] = true;
         }
 
         private static void OnKeyReleased(object sender, KeyEventArgs args)
         {
             var io = ImGui.GetIO();
-            io.KeysDown[(int) args.Code] = false;
+            io.KeysDown[(int)args.Code] = false;
         }
 
         private static void OnTextEntered(object sender, TextEventArgs args)
@@ -201,7 +200,7 @@ namespace Saffron2D.GuiCollection
             {
                 if (io.WantSetMousePos)
                 {
-                    var newMousePos = new Vector2i((int) io.MousePos.X, (int) io.MousePos.Y);
+                    var newMousePos = new Vector2i((int)io.MousePos.X, (int)io.MousePos.Y);
                     Mouse.SetPosition(newMousePos);
                 }
                 else
@@ -211,23 +210,23 @@ namespace Saffron2D.GuiCollection
 
                 for (var i = 0; i < 3; i++)
                 {
-                    io.MouseDown[i] = TouchDown[i] || Touch.IsDown((uint) i) ||
+                    io.MouseDown[i] = TouchDown[i] || Touch.IsDown((uint)i) ||
                                       MousePressed[i] ||
-                                      Mouse.IsButtonPressed((Mouse.Button) i);
+                                      Mouse.IsButtonPressed((Mouse.Button)i);
                     MousePressed[i] = false;
                     TouchDown[i] = false;
                 }
             }
 
             // Update Ctrl, Shift, Alt, Super state
-            io.KeyCtrl = io.KeysDown[(int) Keyboard.Key.LControl] ||
-                         io.KeysDown[(int) Keyboard.Key.RControl];
+            io.KeyCtrl = io.KeysDown[(int)Keyboard.Key.LControl] ||
+                         io.KeysDown[(int)Keyboard.Key.RControl];
             io.KeyAlt =
-                io.KeysDown[(int) Keyboard.Key.LAlt] || io.KeysDown[(int) Keyboard.Key.RAlt];
+                io.KeysDown[(int)Keyboard.Key.LAlt] || io.KeysDown[(int)Keyboard.Key.RAlt];
             io.KeyShift =
-                io.KeysDown[(int) Keyboard.Key.LShift] || io.KeysDown[(int) Keyboard.Key.RShift];
-            io.KeySuper = io.KeysDown[(int) Keyboard.Key.LSystem] ||
-                          io.KeysDown[(int) Keyboard.Key.RSystem];
+                io.KeysDown[(int)Keyboard.Key.LShift] || io.KeysDown[(int)Keyboard.Key.RShift];
+            io.KeySuper = io.KeysDown[(int)Keyboard.Key.LSystem] ||
+                          io.KeysDown[(int)Keyboard.Key.RSystem];
 
             //assert(io.Fonts->Fonts.Size > 0);  // You forgot to create and set up font
             //                                   // atlas (see createFontTexture)
@@ -271,9 +270,9 @@ namespace Saffron2D.GuiCollection
         {
             ImGui.GetIO().Fonts.TexID = IntPtr.Zero;
             _fontTexture.Dispose();
-            for (var i = 0; i < (int) ImGuiMouseCursor.COUNT; ++i)
+            for (var i = 0; i < (int)ImGuiMouseCursor.COUNT; ++i)
             {
-                if(MouseCursors[i] != null)
+                if (MouseCursors[i] != null)
                 {
                     MouseCursors[i].Dispose();
                 }
@@ -287,7 +286,7 @@ namespace Saffron2D.GuiCollection
             var io = ImGui.GetIO();
             io.Fonts.GetTexDataAsRGBA32(out IntPtr pixels, out var width, out var height, out var bpp);
 
-            _fontTexture = new Texture((uint) width, (uint)height);
+            _fontTexture = new Texture((uint)width, (uint)height);
 
             var size = width * height * bpp;
             var byteArray = new byte[size];
@@ -311,7 +310,7 @@ namespace Saffron2D.GuiCollection
 
         private static void LoadMouseCursor(ImGuiMouseCursor imguiCursorType, Cursor.CursorType sfmlCursorType)
         {
-            MouseCursors[(int) imguiCursorType] = new Cursor(sfmlCursorType);
+            MouseCursors[(int)imguiCursorType] = new Cursor(sfmlCursorType);
         }
 
         private static void UpdateMouseCursor(Window window)
@@ -328,7 +327,7 @@ namespace Saffron2D.GuiCollection
             {
                 window.SetMouseCursorVisible(true);
 
-                var sfmlCursor = MouseCursors[(int) cursor] ?? MouseCursors[(int) ImGuiMouseCursor.Arrow];
+                var sfmlCursor = MouseCursors[(int)cursor] ?? MouseCursors[(int)ImGuiMouseCursor.Arrow];
                 window.SetMouseCursor(sfmlCursor);
             }
         }
@@ -433,7 +432,7 @@ namespace Saffron2D.GuiCollection
         {
             var drawList = ImGui.GetWindowDrawList();
             drawList.AddRect(GetTopLeftAbsolute(rect), GetDownRightAbsolute(rect),
-                ColorConvertFloat4ToU32(ToImColor(color).Value), rounding, (ImDrawCornerFlags) roundingCorners,
+                ColorConvertFloat4ToU32(ToImColor(color).Value), rounding, (ImDrawCornerFlags)roundingCorners,
                 thickness);
         }
 
@@ -442,17 +441,17 @@ namespace Saffron2D.GuiCollection
         {
             var drawList = ImGui.GetWindowDrawList();
             drawList.AddRectFilled(GetTopLeftAbsolute(rect), GetDownRightAbsolute(rect),
-                ColorConvertFloat4ToU32(ToImColor(color).Value), rounding, (ImDrawCornerFlags) roundingCorners);
+                ColorConvertFloat4ToU32(ToImColor(color).Value), rounding, (ImDrawCornerFlags)roundingCorners);
         }
 
         private static ImColor ToImColor(Color c)
         {
-            return new ImColor {Value = new Vector4(c.R, c.G, c.B, c.A)};
+            return new ImColor { Value = new Vector4(c.R, c.G, c.B, c.A) };
         }
 
         private static unsafe uint ColorConvertFloat4ToU32(Vector4 c)
         {
-            var src = new[] {(byte) c.X, (byte) c.Y, (byte) c.Z, (byte) c.W};
+            var src = new[] { (byte)c.X, (byte)c.Y, (byte)c.Z, (byte)c.W };
             return BitConverter.ToUInt32(src);
         }
 
