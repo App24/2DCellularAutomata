@@ -29,10 +29,11 @@ namespace CellularAutomata
                 new Preset("Diamond Fractal", "0-8/1/1/N", false),
                 new Preset("Diamond", "0-8/1-8/1/N", false),
                 new Preset("Breathing Diamond", "0/1-8/10/N", false),
-                new Preset("Squre Fractal", "0-8/1/1/M", false),
+                new Preset("Square Fractal", "0-8/1/1/M", false),
                 new Preset("Flashing Squares", "0/1/1/M", false),
                 new Preset("Twinkling Stars", "3,4/3/1/M", true),
             };
+
         private static int presetIndex = 0;
 
         private static Preset CurrentPreset => presets[presetIndex];
@@ -54,10 +55,13 @@ namespace CellularAutomata
                 return;
             }
 
-            System.Numerics.Vector3 rgb = new System.Numerics.Vector3(1);
+            System.Numerics.Vector3 cellColor = new System.Numerics.Vector3(1);
+            System.Numerics.Vector3 backgroundColor = new System.Numerics.Vector3(0);
+
             CellularAutomataSimulation cellularAutomataSimulation = new CellularAutomataSimulation(imageWidth, imageHeight, settings, randomSpawn);
 
-            cellularAutomataSimulation.cellColor = new Vector3f(rgb.X, rgb.Y, rgb.Z);
+            cellularAutomataSimulation.cellColor = new Vector3f(cellColor.X, cellColor.Y, cellColor.Z);
+            cellularAutomataSimulation.backgroundColor = new Vector3f(backgroundColor.X, backgroundColor.Y, backgroundColor.Z); ;
 
             float simulationCounter = 0;
 
@@ -87,16 +91,7 @@ namespace CellularAutomata
                     sprite.Texture = cellularAutomataSimulation.Simulate();
                 }
 
-                if (ImGui.Begin("Color"))
-                {
-                    if(ColorPicker("Cell Color", ref rgb))
-                    {
-                        cellularAutomataSimulation.cellColor = new Vector3f(rgb.X, rgb.Y, rgb.Z);
-                    }
-                    ImGui.End();
-                }
-
-                if (ImGui.Begin("Stats"))
+                if (ImGui.Begin("Simulation Stats"))
                 {
                     ImGui.Text($"Simulation speed: {(unlockedSpeed ? "Unlocked" : CellularAutomataSimulation.simulationSpeed)}");
                     ImGui.Text($"Delta Time: {DisplayManager.DeltaTime}");
@@ -104,6 +99,21 @@ namespace CellularAutomata
                     ImGui.Text($"Current Width: {sprite.Texture.Size.X}");
                     ImGui.Text($"Current Height: {sprite.Texture.Size.Y}");
                     ImGui.Text($"Number of Cells: {sprite.Texture.Size.X * sprite.Texture.Size.Y}");
+                    ImGui.End();
+                }
+
+                if (ImGui.Begin("Color"))
+                {
+                    if (ImGuiExtras.ColorPicker("Cell Color", ref cellColor))
+                    {
+                        cellularAutomataSimulation.cellColor = new Vector3f(cellColor.X, cellColor.Y, cellColor.Z);
+                    }
+
+                    if (ImGuiExtras.ColorPicker("Background Color", ref backgroundColor))
+                    {
+                        cellularAutomataSimulation.backgroundColor = new Vector3f(backgroundColor.X, backgroundColor.Y, backgroundColor.Z);
+                    }
+
                     ImGui.End();
                 }
 
@@ -185,7 +195,8 @@ namespace CellularAutomata
                         {
                             cellularAutomataSimulation = new CellularAutomataSimulation(imageWidth, imageHeight, settings, randomSpawn);
 
-                            cellularAutomataSimulation.cellColor = new Vector3f(rgb.X, rgb.Y, rgb.Z);
+                            cellularAutomataSimulation.cellColor = new Vector3f(cellColor.X, cellColor.Y, cellColor.Z);
+                            cellularAutomataSimulation.backgroundColor = new Vector3f(backgroundColor.X, backgroundColor.Y, backgroundColor.Z);
 
                             sprite = new Sprite(cellularAutomataSimulation.texture);
 
@@ -219,181 +230,38 @@ namespace CellularAutomata
         {
             View view = DisplayManager.View;
             #region Zoom
-            if (MouseInput.Scroll != 0)
+            if (!ImGui.IsWindowHovered(ImGuiHoveredFlags.AnyWindow))
             {
-                view.Size += new Vector2f(view.Size.X / view.Size.X, view.Size.Y / view.Size.X) * -MouseInput.Scroll * 40;
+                if (MouseInput.Scroll != 0)
+                {
+                    view.Size += new Vector2f(view.Size.X / view.Size.X, view.Size.Y / view.Size.X) * -MouseInput.Scroll * 40;
+                }
             }
             #endregion
 
             #region Movement
-            if (KeyboardInput.IsKeyHeld(KeyboardKeys.MoveUp))
+            if (!ImGui.IsAnyItemActive())
             {
-                view.Move(new Vector2f(0, -1) * DisplayManager.DeltaTime * speed * (KeyboardInput.ShiftHeld ? 2 : 1));
-            }
-            else if (KeyboardInput.IsKeyHeld(KeyboardKeys.MoveDown))
-            {
-                view.Move(new Vector2f(0, 1) * DisplayManager.DeltaTime * speed * (KeyboardInput.ShiftHeld ? 2 : 1));
-            }
+                if (KeyboardInput.IsKeyHeld(KeyboardKeys.MoveUp))
+                {
+                    view.Move(new Vector2f(0, -1) * DisplayManager.DeltaTime * speed * (KeyboardInput.ShiftHeld ? 2 : 1));
+                }
+                else if (KeyboardInput.IsKeyHeld(KeyboardKeys.MoveDown))
+                {
+                    view.Move(new Vector2f(0, 1) * DisplayManager.DeltaTime * speed * (KeyboardInput.ShiftHeld ? 2 : 1));
+                }
 
-            if (KeyboardInput.IsKeyHeld(KeyboardKeys.MoveLeft))
-            {
-                view.Move(new Vector2f(-1, 0) * DisplayManager.DeltaTime * speed * (KeyboardInput.ShiftHeld ? 2 : 1));
-            }
-            else if (KeyboardInput.IsKeyHeld(KeyboardKeys.MoveRight))
-            {
-                view.Move(new Vector2f(1, 0) * DisplayManager.DeltaTime * speed * (KeyboardInput.ShiftHeld ? 2 : 1));
+                if (KeyboardInput.IsKeyHeld(KeyboardKeys.MoveLeft))
+                {
+                    view.Move(new Vector2f(-1, 0) * DisplayManager.DeltaTime * speed * (KeyboardInput.ShiftHeld ? 2 : 1));
+                }
+                else if (KeyboardInput.IsKeyHeld(KeyboardKeys.MoveRight))
+                {
+                    view.Move(new Vector2f(1, 0) * DisplayManager.DeltaTime * speed * (KeyboardInput.ShiftHeld ? 2 : 1));
+                }
             }
             #endregion
             DisplayManager.View = view;
-        }
-
-        static bool ColorPicker(string label, ref System.Numerics.Vector3 rgb)
-        {
-            float HUE_PICKER_WIDTH = 20f;
-            float CROSSHAIR_SIZE = 7f;
-            System.Numerics.Vector2 SV_PICKER_SIZE = new System.Numerics.Vector2(200, 200);
-
-            ImColor color = new ImColor();
-            color.Value = new System.Numerics.Vector4(rgb, 255);
-            bool valueChanged = false;
-
-            var drawList = ImGui.GetWindowDrawList();
-
-            var pickerPos = ImGui.GetCursorScreenPos();
-
-            List<ImColor> colors = new List<ImColor>();
-
-            ImColor customColor = new ImColor();
-            customColor.Value = new System.Numerics.Vector4(255, 0, 0, 255);
-            colors.Add(customColor);
-
-            customColor = new ImColor();
-            customColor.Value = new System.Numerics.Vector4(255, 255, 0, 255);
-            colors.Add(customColor);
-
-            customColor = new ImColor();
-            customColor.Value = new System.Numerics.Vector4(0, 255, 0, 255);
-            colors.Add(customColor);
-
-            customColor = new ImColor();
-            customColor.Value = new System.Numerics.Vector4(0, 255, 255, 255);
-            colors.Add(customColor);
-
-            customColor = new ImColor();
-            customColor.Value = new System.Numerics.Vector4(0, 0, 255, 255);
-            colors.Add(customColor);
-
-            customColor = new ImColor();
-            customColor.Value = new System.Numerics.Vector4(255, 0, 255, 255);
-            colors.Add(customColor);
-
-            customColor = new ImColor();
-            customColor.Value = new System.Numerics.Vector4(255, 0, 0, 255);
-            colors.Add(customColor);
-
-            for (int i = 0; i < 6; i++)
-            {
-                drawList.AddRectFilledMultiColor(
-                    new System.Numerics.Vector2(pickerPos.X + SV_PICKER_SIZE.X + 10, pickerPos.Y + i * (SV_PICKER_SIZE.Y / 6f)),
-                    new System.Numerics.Vector2(pickerPos.X + SV_PICKER_SIZE.X + 10 + HUE_PICKER_WIDTH, pickerPos.Y + (i + 1) * (SV_PICKER_SIZE.Y / 6)),
-                    ImGui.ColorConvertFloat4ToU32(colors[i].Value),
-                    ImGui.ColorConvertFloat4ToU32(colors[i].Value),
-                    ImGui.ColorConvertFloat4ToU32(colors[i + 1].Value),
-                    ImGui.ColorConvertFloat4ToU32(colors[i + 1].Value)
-                    );
-            }
-
-            ImGui.ColorConvertRGBtoHSV(
-                color.Value.X, color.Value.Y, color.Value.Z, out float hue, out float saturation, out float value);
-
-            drawList.AddLine(
-                new System.Numerics.Vector2(pickerPos.X + SV_PICKER_SIZE.X + 8, pickerPos.Y + hue * SV_PICKER_SIZE.Y),
-                new System.Numerics.Vector2(pickerPos.X + SV_PICKER_SIZE.X + 12 + HUE_PICKER_WIDTH, pickerPos.Y + hue * SV_PICKER_SIZE.Y),
-                ImGui.ColorConvertFloat4ToU32(new System.Numerics.Vector4(255))
-                );
-
-            {
-                int step = 5;
-                System.Numerics.Vector2 pos = new System.Numerics.Vector2(0);
-
-                System.Numerics.Vector4 c00 = new System.Numerics.Vector4(1, 1, 1, 1);
-                System.Numerics.Vector4 c10 = new System.Numerics.Vector4(1, 1, 1, 1);
-                System.Numerics.Vector4 c01 = new System.Numerics.Vector4(1, 1, 1, 1);
-                System.Numerics.Vector4 c11 = new System.Numerics.Vector4(1, 1, 1, 1);
-                for (int y1 = 0; y1 < step; y1++)
-                {
-                    for (int x1 = 0; x1 < step; x1++)
-                    {
-                        float s0 = x1 / (float)step;
-                        float s1 = (x1 + 1) / (float)step;
-                        float v0 = 1 - y1 / (float)step;
-                        float v1 = 1 - (y1+1) / (float)step;
-
-                        ImGui.ColorConvertHSVtoRGB(hue, s0, v0, out c00.X, out c00.Y, out c00.Z);
-                        ImGui.ColorConvertHSVtoRGB(hue, s1, v0, out c10.X, out c10.Y, out c10.Z);
-                        ImGui.ColorConvertHSVtoRGB(hue, s0, v1, out c01.X, out c01.Y, out c01.Z);
-                        ImGui.ColorConvertHSVtoRGB(hue, s1, v1, out c11.X, out c11.Y, out c11.Z);
-
-                        drawList.AddRectFilledMultiColor(
-                            new System.Numerics.Vector2(pickerPos.X + pos.X, pickerPos.Y+pos.Y),
-                            new System.Numerics.Vector2(pickerPos.X + pos.X + SV_PICKER_SIZE.X/step, pickerPos.Y+pos.Y+SV_PICKER_SIZE.Y/step),
-                            ImGui.ColorConvertFloat4ToU32(c00),
-                            ImGui.ColorConvertFloat4ToU32(c10),
-                            ImGui.ColorConvertFloat4ToU32(c11),
-                            ImGui.ColorConvertFloat4ToU32(c01)
-                            );
-
-                        pos.X += SV_PICKER_SIZE.X / step;
-                    }
-                    pos.X = 0;
-                    pos.Y += SV_PICKER_SIZE.Y / step;
-                }
-            }
-
-            float x = saturation * SV_PICKER_SIZE.X;
-            float y = (1-value) * SV_PICKER_SIZE.Y;
-            System.Numerics.Vector2 p = new System.Numerics.Vector2(pickerPos.X + x, pickerPos.Y + y);
-            drawList.AddLine(new System.Numerics.Vector2(p.X - CROSSHAIR_SIZE, p.Y), new System.Numerics.Vector2(p.X - 2, p.Y), ImGui.ColorConvertFloat4ToU32(new System.Numerics.Vector4(255)));
-            drawList.AddLine(new System.Numerics.Vector2(p.X + CROSSHAIR_SIZE, p.Y), new System.Numerics.Vector2(p.X + 2, p.Y), ImGui.ColorConvertFloat4ToU32(new System.Numerics.Vector4(255)));
-            drawList.AddLine(new System.Numerics.Vector2(p.X, p.Y - CROSSHAIR_SIZE), new System.Numerics.Vector2(p.X, p.Y - 2), ImGui.ColorConvertFloat4ToU32(new System.Numerics.Vector4(255)));
-            drawList.AddLine(new System.Numerics.Vector2(p.X, p.Y + CROSSHAIR_SIZE), new System.Numerics.Vector2(p.X, p.Y + 2), ImGui.ColorConvertFloat4ToU32(new System.Numerics.Vector4(255)));
-
-            ImGui.InvisibleButton("saturation_value_selector", SV_PICKER_SIZE);
-
-            if (ImGui.IsItemActive() && ImGui.GetIO().MouseDown[0])
-            {
-                System.Numerics.Vector2 mousePosInCanvas = new System.Numerics.Vector2(ImGui.GetIO().MousePos.X - pickerPos.X, ImGui.GetIO().MousePos.Y - pickerPos.Y);
-
-                if (mousePosInCanvas.X < 0) mousePosInCanvas.X = 0;
-                else if (mousePosInCanvas.X >= SV_PICKER_SIZE.X - 1) mousePosInCanvas.X = SV_PICKER_SIZE.X - 1;
-
-                if (mousePosInCanvas.Y < 0) mousePosInCanvas.Y = 0;
-                else if (mousePosInCanvas.Y >= SV_PICKER_SIZE.Y - 1) mousePosInCanvas.Y = SV_PICKER_SIZE.Y - 1;
-
-                value = 1 - (mousePosInCanvas.Y / (SV_PICKER_SIZE.Y - 1));
-                saturation = mousePosInCanvas.X / (SV_PICKER_SIZE.X - 1);
-
-                valueChanged = true;
-            }
-
-            ImGui.SetCursorScreenPos(new System.Numerics.Vector2(pickerPos.X + SV_PICKER_SIZE.X + 10, pickerPos.Y));
-            ImGui.InvisibleButton("hue_selector", new System.Numerics.Vector2(HUE_PICKER_WIDTH, SV_PICKER_SIZE.Y));
-
-            if((ImGui.IsItemHovered()||ImGui.IsItemActive()) && ImGui.GetIO().MouseDown[0])
-            {
-                System.Numerics.Vector2 mousePosInCanvas = new System.Numerics.Vector2(ImGui.GetIO().MousePos.X - pickerPos.X, ImGui.GetIO().MousePos.Y - pickerPos.Y);
-
-                if (mousePosInCanvas.Y < 0) mousePosInCanvas.Y = 0;
-                else if (mousePosInCanvas.Y >= SV_PICKER_SIZE.Y - 2) mousePosInCanvas.Y = SV_PICKER_SIZE.Y - 2;
-
-                hue = mousePosInCanvas.Y / (SV_PICKER_SIZE.Y - 1);
-
-                valueChanged = true;
-            }
-
-            ImGui.ColorConvertHSVtoRGB(hue, saturation, value, out rgb.X, out rgb.Y, out rgb.Z);
-
-            return valueChanged | ImGui.ColorEdit3(label, ref rgb);
         }
     }
 }

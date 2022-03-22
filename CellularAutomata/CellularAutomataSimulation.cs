@@ -24,7 +24,8 @@ namespace CellularAutomata
 
         private readonly bool randomSpawn;
 
-        public Vector3f cellColor = new Vector3f(1, 1, 1);
+        public Vector3f cellColor;
+        public Vector3f backgroundColor;
 
         public CellularAutomataSimulation(int width, int height, CellularAutomataSettings settings, bool randomSpawn)
         {
@@ -165,12 +166,13 @@ namespace CellularAutomata
                 {
                     int index = y * width + x;
                     int dataIndex = (y * width + x) * 4;
-                    data[dataIndex + 0] = (byte)Math.Round(cellColor.X*255 * (cells[index] / (float)settings.states));
-                    data[dataIndex + 1] = (byte)Math.Round(cellColor.Y*255 * (cells[index] / (float)settings.states));
-                    data[dataIndex + 2] = (byte)Math.Round(cellColor.Z*255 * (cells[index] / (float)settings.states));
+                    data[dataIndex + 0] = (byte)(Math.Round(cellColor.X * (255 - (backgroundColor.X * 255)) * (cells[index] / (float)settings.states)) + (backgroundColor.X * 255));
+                    data[dataIndex + 1] = (byte)(Math.Round(cellColor.Y * (255 - (backgroundColor.Y * 255)) * (cells[index] / (float)settings.states)) + (backgroundColor.Y * 255));
+                    data[dataIndex + 2] = (byte)(Math.Round(cellColor.Z * (255 - (backgroundColor.Z * 255)) * (cells[index] / (float)settings.states)) + (backgroundColor.Z * 255));
                     data[dataIndex + 3] = 255;
                 }
             }
+
             texture.Update(data);
         }
 
