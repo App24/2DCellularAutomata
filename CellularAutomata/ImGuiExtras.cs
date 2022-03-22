@@ -163,5 +163,29 @@ namespace CellularAutomata
 
             return valueChanged | ImGui.ColorEdit3(label, ref rgb);
         }
+
+        public static bool Dropdown(string label, string[] items, ref int index)
+        {
+            if (ImGui.BeginCombo(label, items[index]))
+            {
+                for (int i = 0; i < items.Length; i++)
+                {
+                    string name = items[i];
+                    bool selected = name == items[index];
+                    if (ImGui.Selectable(name, selected))
+                    {
+                        index = i;
+                    }
+
+                    if (selected)
+                    {
+                        ImGui.SetItemDefaultFocus();
+                    }
+                }
+                ImGui.EndCombo();
+                return true;
+            }
+            return false;
+        }
     }
 }

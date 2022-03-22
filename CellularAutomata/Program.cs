@@ -34,6 +34,21 @@ namespace CellularAutomata
                 new Preset("Twinkling Stars", "3,4/3/1/M", true),
             };
 
+        private static List<string> presetNames
+        {
+            get
+            {
+                List<string> list = new List<string>();
+
+                foreach (Preset item in presets)
+                {
+                    list.Add(item.name);
+                }
+
+                return list;
+            }
+        }
+
         private static int presetIndex = 0;
 
         private static Preset CurrentPreset => presets[presetIndex];
@@ -150,24 +165,10 @@ namespace CellularAutomata
 
                 if (ImGui.Begin("Automata Settings"))
                 {
-                    if (ImGui.BeginCombo("##combo", CurrentPreset.name))
+                    if(ImGuiExtras.Dropdown("##combo", presetNames.ToArray(), ref presetIndex))
                     {
-                        for (int i = 0; i < presets.Count; i++)
-                        {
-                            string name = presets[i].name;
-                            bool selected = name == CurrentPreset.name;
-                            if (ImGui.Selectable(name, selected))
-                            {
-                                presetIndex = i;
-                                settingsString = CurrentPreset.rule;
-                                randomSpawn = CurrentPreset.randomSpawn;
-                            }
-                            if (selected)
-                            {
-                                ImGui.SetItemDefaultFocus();
-                            }
-                        }
-                        ImGui.EndCombo();
+                        settingsString = CurrentPreset.rule;
+                        randomSpawn = CurrentPreset.randomSpawn;
                     }
 
                     ImGui.InputText("Rule", ref settingsString, 512);
