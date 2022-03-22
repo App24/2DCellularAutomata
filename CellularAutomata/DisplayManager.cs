@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Saffron2D.GuiCollection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -46,6 +47,8 @@ namespace CellularAutomata
             long currentTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
             DeltaTime = (currentTime - previousTime) / 1000f;
             previousTime = currentTime;
+
+            DeltaTime = MathF.Max(0.001f, DeltaTime);
         }
     }
 }

@@ -24,11 +24,6 @@ namespace CellularAutomata
 
         private readonly bool randomSpawn;
 
-        public CellularAutomataSimulation(int width, int height, string settings, bool randomSpawn) : this(width, height, Utils.GenerateSettings(settings), randomSpawn)
-        {
-
-        }
-
         public CellularAutomataSimulation(int width, int height, CellularAutomataSettings settings, bool randomSpawn)
         {
             this.width = width;

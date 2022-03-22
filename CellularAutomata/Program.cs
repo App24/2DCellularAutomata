@@ -1,6 +1,9 @@
 ﻿global using SFML.Graphics;
 global using SFML.System;
 global using SFML.Window;
+using ImGuiNET;
+using Saffron2D.GuiCollection;
+using System.Text;
 
 namespace CellularAutomata
 {
@@ -63,7 +66,15 @@ namespace CellularAutomata
                     break;
             }
 
-            CellularAutomataSimulation cellularAutomataSimulation = new CellularAutomataSimulation(800, 800, settingsString, randomSpawn);
+            int imageWidth = 800;
+            int imageHeight = 800;
+
+            if(!Utils.GenerateSettings(settingsString, out CellularAutomataSettings settings))
+            {
+                return;
+            }
+
+            CellularAutomataSimulation cellularAutomataSimulation = new CellularAutomataSimulation(imageWidth, imageHeight, settings, randomSpawn);
 
             float simulationCounter = 0;
 
@@ -75,10 +86,13 @@ namespace CellularAutomata
 
             float speed = 200;
 
+            GuiImpl.Init(DisplayManager.Window);
+
             while (DisplayManager.Window.IsOpen)
             {
                 DisplayManager.Window.DispatchEvents();
                 DisplayManager.UpdateWindow();
+                GuiImpl.Update(DisplayManager.Window, DisplayManager.DeltaTime);
 
                 if ((simulationCounter >= 1f / CellularAutomataSimulation.SimulationSpeed && !paused) || (paused && KeyboardInput.IsKeyPressed(KeyboardKeys.Next)))
                 {
@@ -86,10 +100,59 @@ namespace CellularAutomata
                     sprite.Texture = cellularAutomataSimulation.Simulate();
                 }
 
+                if (ImGui.Begin("Stats"))
+                {
+                    ImGui.Text($"Simulation speed: {CellularAutomataSimulation.SimulationSpeed}");
+                    ImGui.Text($"Delta Time: {DisplayManager.DeltaTime}");
+                    ImGui.Text($"Current Rule: {settings.rule}");
+                    ImGui.Text($"Current Width: {sprite.Texture.Size.X}");
+                    ImGui.Text($"Current Height: {sprite.Texture.Size.Y}");
+                    ImGui.End();
+                }
+
+                if (ImGui.Begin("Options"))
+                {
+                    ImGui.InputText("Rule", ref settingsString, 512);
+                    ImGui.Checkbox("Random Spawn", ref randomSpawn);
+
+                    if(ImGui.InputInt("Width", ref imageWidth))
+                    {
+                        if(imageWidth <= 0)
+                        {
+                            imageWidth = 1;
+                        }
+                    }
+
+                    if(ImGui.InputInt("Height", ref imageHeight))
+                    {
+                        if (imageHeight <= 0)
+                        {
+                            imageHeight = 1;
+                        }
+                    }
+
+                    if (ImGui.Button("Restart"))
+                    {
+                        if (Utils.GenerateSettings(settingsString, out settings))
+                        {
+                            cellularAutomataSimulation = new CellularAutomataSimulation(imageWidth, imageHeight, settings, randomSpawn);
+
+                            sprite = new Sprite(cellularAutomataSimulation.texture);
+
+                            sprite.Position = new Vector2f(DisplayManager.ViewWidth / 2f, DisplayManager.ViewHeight / 2f);
+
+                            sprite.Origin = new Vector2f(cellularAutomataSimulation.texture.Size.X / 2f, cellularAutomataSimulation.texture.Size.Y / 2f);
+                        }
+                    }
+
+                    ImGui.End();
+                }
+
                 ProcessInput(speed, cellularAutomataSimulation);
 
                 DisplayManager.Window.Clear(new Color(20, 20, 20));
                 DisplayManager.Window.Draw(sprite);
+                GuiImpl.Render(DisplayManager.Window);
                 DisplayManager.Window.Display();
 
                 if (!paused)
@@ -98,6 +161,8 @@ namespace CellularAutomata
                 KeyboardInput.ResetKeyboard();
                 MouseInput.ResetMouse();
             }
+
+            GuiImpl.Shutdown();
         }
 
         private static void ProcessInput(float speed, CellularAutomataSimulation cellularAutomataSimulation)

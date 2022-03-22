@@ -8,13 +8,15 @@ namespace CellularAutomata
 {
     internal static class Utils
     {
-        public static CellularAutomataSettings GenerateSettings(string settingsString)
+        public static bool GenerateSettings(string settingsString, out CellularAutomataSettings settings)
         {
+            settings = new CellularAutomataSettings();
+
             string[] separateSettings = settingsString.Split('/');
             if (separateSettings.Length < 4)
-                throw new ArgumentOutOfRangeException();
+                return false;
 
-            CellularAutomataSettings settings = new CellularAutomataSettings();
+            settings.rule = settingsString;
 
             string surviveString = separateSettings[0].Trim();
             string bornString = separateSettings[1].Trim();
@@ -36,7 +38,7 @@ namespace CellularAutomata
                     string[] bounds = survive.Split("-");
                     if (!byte.TryParse(bounds[0].Trim(), out byte minSurvive) || !byte.TryParse(bounds[1].Trim(), out byte maxSurvive))
                     {
-                        throw new ArgumentException();
+                        return false;
                     }
 
                     for (int i = minSurvive; i < maxSurvive + 1; i++)
@@ -63,7 +65,7 @@ namespace CellularAutomata
                     string[] bounds = born.Split("-");
                     if (!byte.TryParse(bounds[0].Trim(), out byte minBorn) || !byte.TryParse(bounds[1].Trim(), out byte maxBorn))
                     {
-                        throw new ArgumentException();
+                        return false;
                     }
 
                     for (int i = minBorn; i < maxBorn + 1; i++)
@@ -77,7 +79,7 @@ namespace CellularAutomata
 
             if (!byte.TryParse(statesString, out settings.states))
             {
-                throw new ArgumentException("Invalid states");
+                return false;
             }
 
             switch (neighbourhoodMode)
@@ -94,11 +96,11 @@ namespace CellularAutomata
                     break;
                 default:
                     {
-                        throw new ArgumentException("Not valid neighbourhood mode");
+                        return false;
                     }
             }
 
-            return settings;
+            return true;
         }
     }
 }

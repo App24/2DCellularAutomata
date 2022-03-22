@@ -12,13 +12,15 @@ namespace CellularAutomata
         public byte[] born;
         public byte states;
         public NeighbourhoodMode neighbourhoodMode;
+        public string rule;
 
-        public CellularAutomataSettings(byte[] survive, byte[] born, byte states, NeighbourhoodMode neighbourhoodMode)
+        public CellularAutomataSettings(byte[] survive, byte[] born, byte states, NeighbourhoodMode neighbourhoodMode, string rule)
         {
             this.survive = survive;
             this.born = born;
             this.states = states;
             this.neighbourhoodMode = neighbourhoodMode;
+            this.rule = rule;
         }
     }
 
