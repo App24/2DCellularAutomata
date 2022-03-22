@@ -21,7 +21,7 @@ namespace CellularAutomata
 
         public static float DeltaTime { get; private set; }
 
-        private static long previousTime;
+        private static Clock clock;
 
         public static void CreateDisplay(uint width, uint height)
         {
@@ -34,7 +34,7 @@ namespace CellularAutomata
             KeyboardInput.InitKeyboard();
             MouseInput.InitMouse();
 
-            previousTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            clock = new Clock();
         }
 
         public static void Close()
@@ -44,11 +44,7 @@ namespace CellularAutomata
 
         public static void UpdateWindow()
         {
-            long currentTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-            DeltaTime = (currentTime - previousTime) / 1000f;
-            previousTime = currentTime;
-
-            DeltaTime = MathF.Max(0.001f, DeltaTime);
+            DeltaTime = clock.Restart().AsSeconds();
         }
     }
 }

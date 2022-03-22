@@ -34,7 +34,7 @@ namespace CellularAutomata
                 new Preset("Twinkling Stars", "3,4/3/1/M", true),
             };
 
-        private static List<string> presetNames
+        private static List<string> PresetNames
         {
             get
             {
@@ -92,6 +92,11 @@ namespace CellularAutomata
 
             bool unlockedSpeed = false;
 
+            float clock = 0;
+
+            int currentGeneration = 0;
+            int generationDifference = 0;
+
             GuiImpl.Init(DisplayManager.Window);
 
             while (DisplayManager.Window.IsOpen)
@@ -104,11 +109,20 @@ namespace CellularAutomata
                 {
                     simulationCounter = 0;
                     sprite.Texture = cellularAutomataSimulation.Simulate();
+                    currentGeneration++;
+                }
+
+                if(clock >= 1)
+                {
+                    clock = 0;
+                    generationDifference = currentGeneration;
+                    currentGeneration = 0;
                 }
 
                 if (ImGui.Begin("Simulation Stats"))
                 {
                     ImGui.Text($"Simulation speed: {(unlockedSpeed ? "Unlocked" : CellularAutomataSimulation.simulationSpeed)}");
+                    ImGui.Text($"Generations Per Second: {generationDifference}");
                     ImGui.Text($"Delta Time: {DisplayManager.DeltaTime}");
                     ImGui.Text($"Current Rule: {settings.rule}");
                     ImGui.Text($"Current Width: {sprite.Texture.Size.X}");
@@ -160,12 +174,22 @@ namespace CellularAutomata
                         }
                     }
 
+                    if(ImGui.InputInt("Threads", ref CellularAutomataSimulation.threadCount))
+                    {
+                        if(CellularAutomataSimulation.threadCount <= 0)
+                        {
+                            CellularAutomataSimulation.threadCount = 1;
+                        }
+
+                        cellularAutomataSimulation.CreateThreads();
+                    }
+
                     ImGui.End();
                 }
 
                 if (ImGui.Begin("Automata Settings"))
                 {
-                    if(ImGuiExtras.Dropdown("##combo", presetNames.ToArray(), ref presetIndex))
+                    if(ImGuiExtras.Dropdown("##combo", PresetNames.ToArray(), ref presetIndex))
                     {
                         settingsString = CurrentPreset.rule;
                         randomSpawn = CurrentPreset.randomSpawn;
@@ -220,6 +244,8 @@ namespace CellularAutomata
                 if (!paused)
                     simulationCounter += DisplayManager.DeltaTime;
 
+                clock += DisplayManager.DeltaTime;
+
                 KeyboardInput.ResetKeyboard();
                 MouseInput.ResetMouse();
             }
@@ -235,7 +261,7 @@ namespace CellularAutomata
             {
                 if (MouseInput.Scroll != 0)
                 {
-                    view.Size += new Vector2f(view.Size.X / view.Size.X, view.Size.Y / view.Size.X) * -MouseInput.Scroll * 40;
+                    view.Size += new Vector2f(view.Size.X / view.Size.X, view.Size.Y / view.Size.X) * -MouseInput.Scroll * 40 * (KeyboardInput.ShiftHeld ? 2 : 1);
                 }
             }
             #endregion

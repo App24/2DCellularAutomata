@@ -13,8 +13,8 @@ namespace CellularAutomata
         private readonly int width;
         private readonly int height;
         private readonly CellularAutomataSettings settings;
-        private readonly Action[] threadActions;
-        private const int ThreadCount = 8;
+        private Action[] threadActions;
+        public static int threadCount = 8;
         private readonly List<int> remainingLines = new List<int>();
 
         private byte[] cells;
@@ -36,13 +36,18 @@ namespace CellularAutomata
             ResetCells();
             texture = new Texture((uint)width, (uint)height);
 
-            threadActions = new Action[ThreadCount];
-            for (int i = 0; i < ThreadCount; i++)
+            CreateThreads();
+
+            UpdateTexture();
+        }
+
+        public void CreateThreads()
+        {
+            threadActions = new Action[threadCount];
+            for (int i = 0; i < threadCount; i++)
             {
                 threadActions[i] = () => SimulateThread();
             }
-
-            UpdateTexture();
         }
 
         public void ResetCells()
