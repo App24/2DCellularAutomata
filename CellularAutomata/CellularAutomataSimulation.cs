@@ -22,17 +22,19 @@ namespace CellularAutomata
 
         public readonly Texture texture;
 
-        private readonly bool randomSpawn;
+        private readonly CellPreset spawn;
 
         public Vector3f cellColor;
         public Vector3f backgroundColor;
 
-        public CellularAutomataSimulation(int width, int height, CellularAutomataSettings settings, bool randomSpawn)
+        public CellularAutomataSimulation(int width, int height, CellularAutomataSettings settings, CellPreset spawn, Vector3f cellColor, Vector3f backgroundColor)
         {
             this.width = width;
             this.height = height;
             this.settings = settings;
-            this.randomSpawn = randomSpawn;
+            this.spawn = spawn;
+            this.cellColor = cellColor;
+            this.backgroundColor = backgroundColor;
             ResetCells();
             texture = new Texture((uint)width, (uint)height);
 
@@ -53,24 +55,48 @@ namespace CellularAutomata
         public void ResetCells()
         {
             cells = new byte[width * height];
-            if (randomSpawn)
+            switch (spawn)
             {
-                Random random = new Random();
-                for (int x = 0; x < width; x++)
-                {
-                    for (int y = 0; y < height; y++)
+                default:
+                case CellPreset.Random:
                     {
-                        bool spawn = random.Next(0, 2) >= 1;
-                        if (spawn)
+                        Random random = new Random();
+                        for (int x = 0; x < width; x++)
                         {
-                            cells[GetIndex(x, y)] = settings.states;
+                            for (int y = 0; y < height; y++)
+                            {
+                                bool spawn = random.Next(0, 2) >= 1;
+                                if (spawn)
+                                {
+                                    cells[GetIndex(x, y)] = settings.states;
+                                }
+                            }
                         }
                     }
-                }
-            }
-            else
-            {
-                cells[GetIndex((int)(width / 2f), (int)(height / 2f))] = settings.states;
+                    break;
+                case CellPreset.Middle:
+                    {
+                        cells[GetIndex((int)(width / 2f), (int)(height / 2f))] = settings.states;
+                    }
+                    break;
+                case CellPreset.MiddleCircle:
+                    {
+                        int midX = (int)(width / 2f);
+                        int midY = (int)(height / 2f);
+                        int radius = 10;
+
+                        for (int x = -radius; x < radius; x++)
+                        {
+                            for (int y = -radius; y < radius; y++)
+                            {
+                                if((x * x + y * y) <= radius*radius)
+                                {
+                                    cells[GetIndex(midX + x, midY + y)] = settings.states;
+                                }
+                            }
+                        }
+                    }
+                    break;
             }
         }
 

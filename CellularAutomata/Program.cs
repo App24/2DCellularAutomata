@@ -11,27 +11,35 @@ namespace CellularAutomata
     {
         public string name;
         public string rule;
-        public bool randomSpawn;
+        public CellPreset spawn;
 
-        public Preset(string name, string rule, bool randomSpawn)
+        public Preset(string name, string rule, CellPreset spawn)
         {
             this.name = name;
             this.rule = rule;
-            this.randomSpawn = randomSpawn;
+            this.spawn = spawn;
         }
+    }
+
+    enum CellPreset
+    {
+        Random,
+        Middle,
+        MiddleCircle
     }
 
     internal class Program
     {
         private static List<Preset> presets = new List<Preset>()
             {
-                new Preset("GOF", "2,3/3/1/M", true),
-                new Preset("Diamond Fractal", "0-8/1/1/N", false),
-                new Preset("Diamond", "0-8/1-8/1/N", false),
-                new Preset("Breathing Diamond", "0/1-8/10/N", false),
-                new Preset("Square Fractal", "0-8/1/1/M", false),
-                new Preset("Flashing Squares", "0/1/1/M", false),
-                new Preset("Twinkling Stars", "3,4/3/1/M", true),
+                new Preset("GOF", "2,3/3/1/M", CellPreset.Random),
+                new Preset("Diamond Fractal", "0-8/1/1/N", CellPreset.Middle),
+                new Preset("Diamond", "0-8/1-8/1/N", CellPreset.Middle),
+                new Preset("Breathing Diamond", "0/1-8/10/N", CellPreset.Middle),
+                new Preset("Square Fractal", "0-8/1/1/M", CellPreset.Middle),
+                new Preset("Flashing Squares", "0/1/1/M", CellPreset.Middle),
+                new Preset("Twinkling Stars", "3,4/3/1/M", CellPreset.Random),
+                new Preset("Growth", "2-6/2/1/M", CellPreset.MiddleCircle),
             };
 
         private static List<string> PresetNames
@@ -49,9 +57,13 @@ namespace CellularAutomata
             }
         }
 
+        static List<string> cellPresets = new List<string>(Enum.GetNames(typeof(CellPreset)));
+
         private static int presetIndex = 0;
+        static int cellPreset=0;
 
         private static Preset CurrentPreset => presets[presetIndex];
+        private static CellPreset CurrentCellPreset => (CellPreset)cellPreset;
 
         public static void Main()
         {
@@ -60,7 +72,6 @@ namespace CellularAutomata
             CellularAutomataSimulation.simulationSpeed = 20;
 
             string settingsString = CurrentPreset.rule;
-            bool randomSpawn = CurrentPreset.randomSpawn;
 
             int imageWidth = 800;
             int imageHeight = 800;
@@ -73,10 +84,7 @@ namespace CellularAutomata
             System.Numerics.Vector3 cellColor = new System.Numerics.Vector3(1);
             System.Numerics.Vector3 backgroundColor = new System.Numerics.Vector3(0);
 
-            CellularAutomataSimulation cellularAutomataSimulation = new CellularAutomataSimulation(imageWidth, imageHeight, settings, randomSpawn);
-
-            cellularAutomataSimulation.cellColor = new Vector3f(cellColor.X, cellColor.Y, cellColor.Z);
-            cellularAutomataSimulation.backgroundColor = new Vector3f(backgroundColor.X, backgroundColor.Y, backgroundColor.Z); ;
+            CellularAutomataSimulation cellularAutomataSimulation = new (imageWidth, imageHeight, settings, CurrentCellPreset, new Vector3f(cellColor.X, cellColor.Y, cellColor.Z), new Vector3f(backgroundColor.X, backgroundColor.Y, backgroundColor.Z));
 
             float simulationCounter = 0;
 
@@ -189,14 +197,15 @@ namespace CellularAutomata
 
                 if (ImGui.Begin("Automata Settings"))
                 {
-                    if(ImGuiExtras.Dropdown("##combo", PresetNames.ToArray(), ref presetIndex))
+                    if(ImGuiExtras.Dropdown("Presets", PresetNames.ToArray(), ref presetIndex))
                     {
                         settingsString = CurrentPreset.rule;
-                        randomSpawn = CurrentPreset.randomSpawn;
+                        cellPreset = (int)CurrentPreset.spawn;
                     }
 
                     ImGui.InputText("Rule", ref settingsString, 512);
-                    ImGui.Checkbox("Random Spawn", ref randomSpawn);
+
+                    ImGuiExtras.Dropdown("Placement", cellPresets.ToArray(), ref cellPreset);
 
                     if (ImGui.InputInt("Width", ref imageWidth))
                     {
@@ -218,10 +227,7 @@ namespace CellularAutomata
                     {
                         if (Utils.GenerateSettings(settingsString, out settings))
                         {
-                            cellularAutomataSimulation = new CellularAutomataSimulation(imageWidth, imageHeight, settings, randomSpawn);
-
-                            cellularAutomataSimulation.cellColor = new Vector3f(cellColor.X, cellColor.Y, cellColor.Z);
-                            cellularAutomataSimulation.backgroundColor = new Vector3f(backgroundColor.X, backgroundColor.Y, backgroundColor.Z);
+                            cellularAutomataSimulation = new CellularAutomataSimulation(imageWidth, imageHeight, settings, CurrentCellPreset, new Vector3f(cellColor.X, cellColor.Y, cellColor.Z), new Vector3f(backgroundColor.X, backgroundColor.Y, backgroundColor.Z));
 
                             sprite = new Sprite(cellularAutomataSimulation.texture);
 
