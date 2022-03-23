@@ -10,11 +10,11 @@
 
   <ItemGroup>
     <PackageReference Include="ImGui.NET" Version="1.78.0" />
+    <PackageReference Include="Saffron.Util.ImGuiSFML" Version="1.3.0" />
     <PackageReference Include="SFML.Net" Version="2.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ImGuiNet\ImGuiNet.csproj" />
+    <Reference Include="ImGuiNetSFML">
+      <HintPath>..\Libs\ImGuiNetSFML.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

@@ -2,7 +2,7 @@
 global using SFML.System;
 global using SFML.Window;
 using ImGuiNET;
-using Saffron2D.GuiCollection;
+using ImGuiNETSFML;
 using System.Text;
 
 namespace CellularAutomata
@@ -81,10 +81,10 @@ namespace CellularAutomata
                 return;
             }
 
-            System.Numerics.Vector3 cellColor = new System.Numerics.Vector3(1);
-            System.Numerics.Vector3 backgroundColor = new System.Numerics.Vector3(0);
+            Vector3f cellColor = new Vector3f(1, 1, 1);
+            Vector3f backgroundColor = new Vector3f(0, 0, 0);
 
-            CellularAutomataSimulation cellularAutomataSimulation = new (imageWidth, imageHeight, settings, CurrentCellPreset, new Vector3f(cellColor.X, cellColor.Y, cellColor.Z), new Vector3f(backgroundColor.X, backgroundColor.Y, backgroundColor.Z));
+            CellularAutomataSimulation cellularAutomataSimulation = new (imageWidth, imageHeight, settings, CurrentCellPreset, cellColor, backgroundColor);
 
             float simulationCounter = 0;
 
@@ -143,12 +143,12 @@ namespace CellularAutomata
                 {
                     if (ImGuiExtras.ColorPicker("Cell Color", ref cellColor))
                     {
-                        cellularAutomataSimulation.cellColor = new Vector3f(cellColor.X, cellColor.Y, cellColor.Z);
+                        cellularAutomataSimulation.cellColor = cellColor;
                     }
 
                     if (ImGuiExtras.ColorPicker("Background Color", ref backgroundColor))
                     {
-                        cellularAutomataSimulation.backgroundColor = new Vector3f(backgroundColor.X, backgroundColor.Y, backgroundColor.Z);
+                        cellularAutomataSimulation.backgroundColor = backgroundColor;
                     }
 
                     ImGui.End();
@@ -227,7 +227,7 @@ namespace CellularAutomata
                     {
                         if (Utils.GenerateSettings(settingsString, out settings))
                         {
-                            cellularAutomataSimulation = new CellularAutomataSimulation(imageWidth, imageHeight, settings, CurrentCellPreset, new Vector3f(cellColor.X, cellColor.Y, cellColor.Z), new Vector3f(backgroundColor.X, backgroundColor.Y, backgroundColor.Z));
+                            cellularAutomataSimulation = new CellularAutomataSimulation(imageWidth, imageHeight, settings, CurrentCellPreset, cellColor, backgroundColor);
 
                             sprite = new Sprite(cellularAutomataSimulation.texture);
 
