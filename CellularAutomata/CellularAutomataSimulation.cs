@@ -13,12 +13,14 @@ namespace CellularAutomata
         private readonly int width;
         private readonly int height;
         private readonly CellularAutomataSettings settings;
-        private Action[] threadActions;
+        private Action[] updateCellsActions;
+        private Action[] updateTextureActions;
         public static int threadCount = 8;
         private readonly List<int> remainingLines = new List<int>();
 
         private byte[] cells;
         private byte[] updateCells;
+        private byte[] updateTexture;
 
         public readonly Texture texture;
 
@@ -45,16 +47,25 @@ namespace CellularAutomata
 
         public void CreateThreads()
         {
-            threadActions = new Action[threadCount];
+            updateCellsActions = new Action[threadCount];
+            updateTextureActions = new Action[threadCount];
             for (int i = 0; i < threadCount; i++)
             {
-                threadActions[i] = () => SimulateThread();
+                updateCellsActions[i] = () => SimulateThread();
+            }
+
+            for (int i = 0; i < threadCount; i++)
+            {
+                updateTextureActions[i] = ()=> UpdateThread();
             }
         }
 
         public void ResetCells()
         {
             cells = new byte[width * height];
+            updateCells = new byte[cells.Length];
+            int midX = (int)(width / 2f);
+            int midY = (int)(height / 2f);
             switch (spawn)
             {
                 default:
@@ -76,13 +87,11 @@ namespace CellularAutomata
                     break;
                 case CellPreset.Middle:
                     {
-                        cells[GetIndex((int)(width / 2f), (int)(height / 2f))] = settings.states;
+                        cells[GetIndex(midX, midY)] = settings.states;
                     }
                     break;
                 case CellPreset.MiddleCircle:
                     {
-                        int midX = (int)(width / 2f);
-                        int midY = (int)(height / 2f);
                         int radius = 10;
 
                         for (int x = -radius; x < radius; x++)
@@ -94,6 +103,35 @@ namespace CellularAutomata
                                     cells[GetIndex(midX + x, midY + y)] = settings.states;
                                 }
                             }
+                        }
+                    }
+                    break;
+                case CellPreset.HorizontalLine:
+                    {
+                        for (int x = 0; x < width; x++)
+                        {
+                            cells[GetIndex(x, midY)] = settings.states;
+                        }
+                    }
+                    break;
+                case CellPreset.VerticalLine:
+                    {
+                        for (int y = 0; y < height; y++)
+                        {
+                            cells[GetIndex(midX, y)] = settings.states;
+                        }
+                    }
+                    break;
+                case CellPreset.Plus:
+                    {
+                        for (int x = 0; x < width; x++)
+                        {
+                            cells[GetIndex(x, midY)] = settings.states;
+                        }
+
+                        for (int y = 0; y < height; y++)
+                        {
+                            cells[GetIndex(midX, y)] = settings.states;
                         }
                     }
                     break;
@@ -127,17 +165,17 @@ namespace CellularAutomata
                 remainingLines.Add(i);
             }
 
-            updateCells = new byte[cells.Length];
-            for (int i = 0; i < cells.Length; i++)
+            Parallel.Invoke(updateCellsActions);
+
+            Array.Copy(updateCells, cells, width * height);
+
+            for (int i = 0; i < height; i++)
             {
-                updateCells[i] = cells[i];
+                remainingLines.Add(i);
             }
 
-            Parallel.Invoke(threadActions);
-
-            cells = updateCells;
-
             UpdateTexture();
+
             return texture;
         }
 
@@ -188,23 +226,38 @@ namespace CellularAutomata
             }
         }
 
-        private void UpdateTexture()
+        private void UpdateThread()
         {
-            byte[] data = new byte[width * height * 4];
-            for (int x = 0; x < width; x++)
+            while (remainingLines.Count > 0)
             {
-                for (int y = 0; y < height; y++)
+                int line = 0;
+                lock (remainingLines)
                 {
-                    int index = y * width + x;
-                    int dataIndex = (y * width + x) * 4;
-                    data[dataIndex + 0] = (byte)(Math.Round(cellColor.X * (255 - (backgroundColor.X * 255)) * (cells[index] / (float)settings.states)) + (backgroundColor.X * 255));
-                    data[dataIndex + 1] = (byte)(Math.Round(cellColor.Y * (255 - (backgroundColor.Y * 255)) * (cells[index] / (float)settings.states)) + (backgroundColor.Y * 255));
-                    data[dataIndex + 2] = (byte)(Math.Round(cellColor.Z * (255 - (backgroundColor.Z * 255)) * (cells[index] / (float)settings.states)) + (backgroundColor.Z * 255));
-                    data[dataIndex + 3] = 255;
+                    if (remainingLines.Count <= 0)
+                        break;
+                    line = remainingLines[0];
+                    remainingLines.RemoveAt(0);
+                }
+
+                for (int i = 0; i < width; i++)
+                {
+                    int index = GetIndex(i, line);
+                    int dataIndex = index * 4;
+                    float stateVal = cells[index] / (float)settings.states;
+                    updateTexture[dataIndex + 0] = (byte)(((cellColor.X * (1 - (backgroundColor.X)) * stateVal) + backgroundColor.X) * 255f);
+                    updateTexture[dataIndex + 1] = (byte)(((cellColor.Y * (1 - (backgroundColor.Y)) * stateVal) + backgroundColor.Y) * 255f);
+                    updateTexture[dataIndex + 2] = (byte)(((cellColor.Z * (1 - (backgroundColor.Z)) * stateVal) + backgroundColor.Z) * 255f);
+                    updateTexture[dataIndex + 3] = 255;
                 }
             }
+        }
 
-            texture.Update(data);
+        private void UpdateTexture()
+        {
+            updateTexture = new byte[width * height * 4];
+            Parallel.Invoke(updateTextureActions);
+
+            texture.Update(updateTexture);
         }
 
         private int GetIndex(int x, int y)

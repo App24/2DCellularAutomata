@@ -25,7 +25,10 @@ namespace CellularAutomata
     {
         Random,
         Middle,
-        MiddleCircle
+        MiddleCircle,
+        HorizontalLine,
+        VerticalLine,
+        Plus
     }
 
     internal class Program
@@ -40,6 +43,7 @@ namespace CellularAutomata
                 new Preset("Flashing Squares", "0/1/1/M", CellPreset.Middle),
                 new Preset("Twinkling Stars", "3,4/3/1/M", CellPreset.Random),
                 new Preset("Growth", "2-6/2/1/M", CellPreset.MiddleCircle),
+                new Preset("Growing GOF", "2,3/3/1/M", CellPreset.Plus),
             };
 
         private static List<string> PresetNames
